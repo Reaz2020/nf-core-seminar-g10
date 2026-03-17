@@ -24,18 +24,14 @@ workflow SEMINAR {
 
     ch_multiqc_files = Channel.empty()
 
-    // ch_star_index    = Channel.value(file(params.star_index))
-    // ch_gtf           = Channel.value(file(params.gtf))
-    // ch_salmon_index  = Channel.value(file(params.salmon_index))
-    // ch_transcriptome = Channel.value(file(params.transcriptome))
+    // STAR inputs
+    ch_star_index = Channel.value([ [id: 'genome'], file(params.star_index) ])
+    ch_star_gtf   = Channel.value([ [id: 'genome'], file(params.gtf) ])
 
-    
-     ch_multiqc_files = Channel.empty()
-
-ch_star_index    = Channel.value([ [id: 'genome'], file(params.star_index) ])
-ch_gtf           = Channel.value([ [id: 'genome'], file(params.gtf) ])
-ch_salmon_index  = Channel.value(file(params.salmon_index))
-ch_transcriptome = Channel.value(file(params.transcriptome))
+    // Salmon inputs
+    ch_salmon_index  = Channel.value(file(params.salmon_index))
+    ch_salmon_gtf    = Channel.value(file(params.gtf))
+    ch_transcriptome = Channel.value(file(params.transcriptome))
 
     //
     // MODULE: Run FastQC
@@ -60,7 +56,7 @@ ch_transcriptome = Channel.value(file(params.transcriptome))
     STAR_ALIGN(
         TRIMGALORE.out.reads,
         ch_star_index,
-        ch_gtf,
+        ch_star_gtf,
         false
     )
     ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect { it[1] })
@@ -71,7 +67,7 @@ ch_transcriptome = Channel.value(file(params.transcriptome))
     SALMON_QUANT(
         TRIMGALORE.out.reads,
         ch_salmon_index,
-        ch_gtf,
+        ch_salmon_gtf,
         ch_transcriptome,
         false,
         false
