@@ -1,0 +1,21 @@
+repository_type: pipeline
+
+nf_core_version: 3.3.2
+
+lint:
+  files_exist:
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+
+template:
+  org: nf-core
+  name: seminar
+  description: RNA-seq pipeline developed for seminar group10 work using nf-core modules
+  author: Md-Reaz-Morshed/Amiraabas
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  skip_features:
+    - igenomes
+    - gpu
+  is_nfcore: true
