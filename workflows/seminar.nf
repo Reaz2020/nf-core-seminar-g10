@@ -29,10 +29,13 @@ workflow SEMINAR {
     // ch_salmon_index  = Channel.value(file(params.salmon_index))
     // ch_transcriptome = Channel.value(file(params.transcriptome))
 
-    ch_star_index    = Channel.value([ [id: 'genome'], file(params.star_index) ])
-    ch_gtf           = Channel.value([ [id: 'genome'], file(params.gtf) ])
-    ch_salmon_index  = Channel.value([ [id: 'transcriptome'], file(params.salmon_index) ])
-    ch_transcriptome = Channel.value([ [id: 'transcriptome'], file(params.transcriptome) ])
+    
+     ch_multiqc_files = Channel.empty()
+
+ch_star_index    = Channel.value([ [id: 'genome'], file(params.star_index) ])
+ch_gtf           = Channel.value([ [id: 'genome'], file(params.gtf) ])
+ch_salmon_index  = Channel.value(file(params.salmon_index))
+ch_transcriptome = Channel.value(file(params.transcriptome))
 
     //
     // MODULE: Run FastQC
