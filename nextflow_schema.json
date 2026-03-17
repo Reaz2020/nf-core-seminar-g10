@@ -187,7 +187,52 @@
                     "hidden": true
                 }
             }
+        },
+        
+"reference_genome_options": {
+    "title": "Reference genome options",
+    "type": "object",
+    "fa_icon": "fas fa-dna",
+    "description": "Reference genome and annotation files used by the RNA-seq pipeline.",
+    "properties": {
+        "fasta": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Path to the reference genome FASTA file.",
+            "fa_icon": "fas fa-file"
+        },
+        "gtf": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Path to the gene annotation GTF file.",
+            "fa_icon": "fas fa-file-alt"
+        },
+        "transcriptome": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Path to the transcriptome FASTA file.",
+            "fa_icon": "fas fa-file"
+        },
+        "star_index": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "Path to the STAR index directory.",
+            "fa_icon": "fas fa-folder-open"
+        },
+        "salmon_index": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "Path to the Salmon index directory.",
+            "fa_icon": "fas fa-folder-open"
         }
+    }
+}
+
     },
     "allOf": [
         {
@@ -198,6 +243,9 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/reference_genome_options"
         }
     ]
 }

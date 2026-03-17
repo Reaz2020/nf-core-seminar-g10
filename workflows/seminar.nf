@@ -9,6 +9,9 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seminar_pipeline'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
+include { STAR_ALIGN } from '../modules/nf-core/star/align/main'
+include { SALMON_QUANT } from '../modules/nf-core/salmon/quant/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,15 +26,56 @@ workflow SEMINAR {
     main:
 
     ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = Channel.empty() //file collect korbe ,ja multiqc report e use hobe
+
+    ch_star_index    = Channel.value(file(params.star_index))
+    ch_gtf           = Channel.value(file(params.gtf))
+    ch_salmon_index  = Channel.value(file(params.salmon_index))
+    ch_transcriptome = Channel.value(file(params.transcriptome))
+
     //
     // MODULE: Run FastQC
     //
     FASTQC (
         ch_samplesheet
     )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{ it[1] })
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    //
+    // MODULE: Run TrimGalore
+    //
+    TRIMGALORE (
+        ch_samplesheet
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(TRIMGALORE.out.zip.collect{ it[1] })
+    ch_multiqc_files = ch_multiqc_files.mix(TRIMGALORE.out.log.collect{ it[1] })
+    ch_versions = ch_versions.mix(TRIMGALORE.out.versions.first())
+
+    //
+    // MODULE: Run STAR align
+    //
+    STAR_ALIGN (
+        TRIMGALORE.out.reads,
+        ch_star_index,
+        ch_gtf,
+        false
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{ it[1] })
+    ch_versions = ch_versions.mix(STAR_ALIGN.out.versions.first())
+
+    //
+    // MODULE: Run Salmon quant
+    //
+    SALMON_QUANT (
+        TRIMGALORE.out.reads,
+        ch_salmon_index,
+        ch_gtf,
+        ch_transcriptome,
+        false,
+        false
+    )
+    ch_versions = ch_versions.mix(SALMON_QUANT.out.versions.first())
 
     //
     // Collate and save software versions
@@ -56,6 +100,8 @@ workflow SEMINAR {
     ch_multiqc_logo          = params.multiqc_logo ?
         Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
         Channel.empty()
+
+
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
